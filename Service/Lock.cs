@@ -17,13 +17,21 @@ class Lock : IDisposable
         }
     }
 
-    private Flag f_;
+    private bool disposed_;
+
+    private readonly Flag f_;
     private bool haveLocked_;
     // テスト
     public Lock(Flag f)
     {
         f_ = f;
     }
+
+    // アンマネージドリソースが追加されたらファイナライザを定義する
+    // ~Lock()
+    // {
+    //     Dispose(false);
+    // }
 
     public bool Try()
     {
@@ -34,14 +42,30 @@ class Lock : IDisposable
         return true;
     }
 
+    protected void Dispose(bool disposing)
+    {
+        if (!disposed_)
+        {
+            if (disposing)
+            {
+                if (haveLocked_)
+                {
+                    Console.WriteLine(f_.I());
+                    Interlocked.CompareExchange(ref f_.I(), 0, 1);
+                    Console.WriteLine(f_.I());
+                    haveLocked_ = false;
+                }
+            }
+            // アンマネージドリソースがある場合は以下にその処理を追加
+
+            disposed_ = true;
+        }
+    }
+
     public void Dispose()
     {
-        if (haveLocked_)
-        {
-            Console.WriteLine(f_.I());
-            Interlocked.CompareExchange(ref f_.I(), 0, 1);
-            Console.WriteLine(f_.I());
-        }
-        haveLocked_ = false;
+        Dispose(true);
+        // アンマネージドリソースが追加された場合は以下が必要,アンマネージドリソースがない場合は不要
+        // GC.SuppressFinalize(this);
     }
 }
