@@ -1,9 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Service;
+using static Service.LockManager;
+
 Console.WriteLine("Hello, World!");
 
-Service.Lock.Flag f = new();
+LockManager lockManager = new();
+
 {
-    using Service.Lock l = new(f);
+    using LockObject l = lockManager.CreateLockObject();
 
     Console.WriteLine(l.Try());
     Console.WriteLine(l.Try());
